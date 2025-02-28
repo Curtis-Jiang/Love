@@ -1,0 +1,463 @@
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&family=Mochiy+Pop+One&display=swap');
+
+:root {
+    --primary-color: #ff85a2;
+    --secondary-color: #ffc0cb;
+    --background-color: #fff0f5;
+    --text-color: #5a5a5a;
+    --letter-bg: #fff;
+    --envelope-color: #ffc0cb;
+    --envelope-flap: #ff85a2;
+    --accent-color: #87cefa;
+    --border-color: #c71585;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Serif SC', serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://i.imgur.com/JXMpbjC.png');
+    background-size: 200px;
+    opacity: 0.07;
+    z-index: -1;
+}
+
+h1 {
+    font-family: 'Mochiy Pop One', 'Ma Shan Zheng', cursive;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 0px rgba(255, 192, 203, 0.5);
+}
+
+/* 头部样式 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+    padding: 10px;
+}
+
+.header-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 15px;
+    animation: float 3s ease-in-out infinite;
+}
+
+/* 信封样式 */
+.envelope-container {
+    width: 300px;
+    height: 200px;
+    margin: 30px auto;
+    perspective: 1000px;
+    cursor: pointer;
+    position: relative;
+}
+
+.envelope-container::before {
+    content: "";
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-image: url('https://i.imgur.com/8kMfqIr.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    top: -40px;
+    right: -20px;
+    transform: rotate(15deg);
+    z-index: 10;
+}
+
+.envelope {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    border: 3px solid var(--border-color);
+    border-radius: 10px;
+}
+
+.envelope.open {
+    transform: rotateX(180deg);
+}
+
+.front, .back, .lid, .paper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--envelope-color);
+    border-radius: 7px;
+}
+
+.front {
+    transform: rotateY(0deg);
+    z-index: 2;
+    background-image: url('https://i.imgur.com/Qp8SWBl.png');
+    background-size: 80px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.back {
+    transform: rotateY(180deg) translateZ(1px);
+}
+
+.lid {
+    width: 100%;
+    height: 100%;
+    background-color: var(--envelope-flap);
+    transform-origin: top;
+    transition: transform 0.5s;
+    z-index: 3;
+    clip-path: polygon(0 0, 50% 30%, 100% 0, 100% 30%, 0 30%);
+    border-top: 3px solid var(--border-color);
+    border-left: 3px solid var(--border-color);
+    border-right: 3px solid var(--border-color);
+    border-radius: 7px 7px 0 0;
+}
+
+.envelope.open .lid {
+    transform: rotateX(180deg);
+}
+
+.paper {
+    background-color: white;
+    height: 90%;
+    top: 5%;
+    transform: translateZ(0.5px);
+    transition: transform 0.5s 0.5s;
+    z-index: 1;
+    background-image: url('https://i.imgur.com/JXMpbjC.png');
+    background-size: 100px;
+    background-position: center;
+    opacity: 0.2;
+}
+
+.envelope.open .paper {
+    transform: translateY(-80px) translateZ(0.5px);
+}
+
+.letter {
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    background-color: var(--letter-bg);
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    transform: translateZ(0.2px) scale(0.8);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.5s;
+    overflow: auto;
+    border-radius: 15px;
+    top: 5%;
+    left: 5%;
+    border: 2px dashed var(--primary-color);
+    background-image: url('https://i.imgur.com/JXMpbjC.png');
+    background-size: 100px;
+    background-position: center;
+    background-opacity: 0.1;
+}
+
+.envelope.open .letter {
+    opacity: 1;
+    transform: translateY(-150px) translateZ(0.2px) scale(1);
+}
+
+.intro {
+    margin-bottom: 15px;
+    line-height: 1.6;
+    position: relative;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.letter-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--primary-color);
+}
+
+.letter-icon {
+    width: 30px;
+    height: 30px;
+    margin: 0 10px;
+}
+
+/* 时间轴样式 */
+.timeline-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 1s, transform 1s;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    border: 2px dashed var(--primary-color);
+    padding: 30px;
+}
+
+.timeline-intro {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.timeline-container::before {
+    content: "";
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background-image: url('https://i.imgur.com/Qp8SWBl.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    top: -20px;
+    left: 20px;
+    transform: rotate(-15deg);
+    z-index: 10;
+}
+
+.timeline-container.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 100%;
+    background-color: var(--primary-color);
+    background-image: linear-gradient(var(--primary-color) 70%, var(--accent-color) 70%);
+    background-size: 4px 20px;
+}
+
+.timeline-item {
+    width: 100%;
+    position: relative;
+    margin-bottom: 50px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.timeline-item:nth-child(odd) {
+    padding-right: calc(50% + 30px);
+    text-align: right;
+}
+
+.timeline-item:nth-child(even) {
+    padding-left: calc(50% + 30px);
+}
+
+.timeline-date {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-family: 'Mochiy Pop One', 'Ma Shan Zheng', cursive;
+    position: relative;
+}
+
+.timeline-date::after {
+    content: "♥";
+    margin-left: 5px;
+    color: var(--primary-color);
+}
+
+.timeline-content {
+    background-color: var(--letter-bg);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: transform 0.3s;
+    border: 2px solid var(--primary-color);
+    background-image: url('https://i.imgur.com/JXMpbjC.png');
+    background-size: 100px;
+    background-position: center;
+    background-opacity: 0.1;
+}
+
+.timeline-content::before {
+    content: "";
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+.timeline-item:nth-child(odd) .timeline-content::before {
+    background-image: url('https://i.imgur.com/8kMfqIr.png');
+    top: -15px;
+    right: -15px;
+    transform: rotate(15deg);
+}
+
+.timeline-item:nth-child(even) .timeline-content::before {
+    background-image: url('https://i.imgur.com/Qp8SWBl.png');
+    top: -15px;
+    left: -15px;
+    transform: rotate(-15deg);
+}
+
+.timeline-content:hover {
+    transform: scale(1.02);
+}
+
+.timeline-content.expanded {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: var(--accent-color);
+}
+
+.timeline-item .dot {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border: 3px solid var(--primary-color);
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.timeline-item .dot::before {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 心形浮动动画 */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+.floating-heart {
+    position: fixed;
+    font-size: 30px;
+    color: var(--primary-color);
+    opacity: 0.7;
+    z-index: -1;
+    animation: float 3s ease-in-out infinite;
+}
+
+/* 添加小狗和Hello Kitty元素 */
+.kitty-element {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: -1;
+    animation: float 4s ease-in-out infinite;
+}
+
+.dog-element {
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: -1;
+    animation: float 5s ease-in-out infinite;
+}
+
+/* 页脚样式 */
+.footer {
+    margin-top: 40px;
+    padding: 15px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    width: 100%;
+    border-top: 1px dashed var(--primary-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 40px;
+    }
+    
+    .timeline-item:nth-child(odd),
+    .timeline-item:nth-child(even) {
+        padding-left: 70px;
+        padding-right: 0;
+        text-align: left;
+    }
+    
+    .timeline-item .dot {
+        left: 40px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .header-icon {
+        width: 40px;
+        height: 40px;
+        margin: 0 10px;
+    }
+    
+    .timeline-container {
+        padding: 20px;
+    }
+} 
