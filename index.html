@@ -3,48 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💕 我们的爱情信笺 💕</title>
+    <title>💕 我们的100天 💕</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Ma+Shan+Zheng&family=Playfair+Display:wght@400;700&display=swap">
     <link rel="icon" href="https://i.imgur.com/8kMfqIr.png" type="image/png">
-    <meta name="description" content="一封充满爱的信笺，记录我们的美好回忆">
+    <meta name="description" content="为我们在一起100天而创建的特别礼物">
+    <meta name="theme-color" content="#ff85a2">
 </head>
 <body>
-    <div class="header">
-        <img src="https://i.imgur.com/8kMfqIr.png" class="header-icon">
-        <h1>💕 我们的爱情信笺 💕</h1>
-        <img src="https://i.imgur.com/Qp8SWBl.png" class="header-icon">
+    <!-- 加载动画 -->
+    <div class="page-loader" id="page-loader">
+        <div class="loader"></div>
     </div>
+    
+    <!-- 加载进度条 -->
+    <div class="progress-bar" id="progress-bar"></div>
 
-    <div class="envelope-container" id="envelope">
-        <div class="envelope">
-            <div class="front"></div>
-            <div class="letter" id="letter">
-                <h1>亲爱的宝贝</h1>
-                <p class="intro">这是我为你准备的特别礼物 💖</p>
-                <p class="intro">这里记录了我们一路走来的点点滴滴，每一封信都承载着我对你满满的爱意。</p>
-                <p class="intro">点击信封，开启我们的甜蜜回忆之旅...</p>
-                <div class="letter-footer">
-                    <img src="https://i.imgur.com/8kMfqIr.png" class="letter-icon">
-                    <span>爱你的我</span>
-                    <img src="https://i.imgur.com/Qp8SWBl.png" class="letter-icon">
+    <!-- 欢迎页面 -->
+    <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">我们的<span class="accent-text">100</span>天</h1>
+            <div class="envelope-container" id="envelope">
+                <div class="envelope">
+                    <div class="front"></div>
+                    <div class="letter" id="letter">
+                        <h1>亲爱的宝贝</h1>
+                        <p class="intro">这是我为你准备的特别礼物 💖</p>
+                        <p class="intro">这里记录了我们一路走来的点点滴滴，每一封信都承载着我对你满满的爱意。</p>
+                        <p class="intro">点击信封，开启我们的甜蜜回忆之旅...</p>
+                        <div class="letter-footer">
+                            <img src="https://i.imgur.com/8kMfqIr.png" class="letter-icon">
+                            <span>爱你的我</span>
+                            <img src="https://i.imgur.com/Qp8SWBl.png" class="letter-icon">
+                        </div>
+                    </div>
+                    <div class="back"></div>
+                    <div class="lid">
+                        <div class="lid-shadow"></div>
+                    </div>
+                    <div class="paper"></div>
                 </div>
             </div>
-            <div class="back"></div>
-            <div class="lid">
-                <div class="lid-shadow"></div>
-            </div>
-            <div class="paper"></div>
         </div>
     </div>
 
-    <div class="timeline-container" id="timeline-container" style="display: none;">
-        <h1>💖 我们的信件时光机 💖</h1>
-        <p class="timeline-intro">点击每封信可以听到可爱的音效哦~</p>
-        <div class="timeline">
-            <!-- 这里将动态加载您的信件 -->
+    <!-- 主内容区域 -->
+    <div class="main-content" id="main-content" style="display: none;">
+        <!-- 导航栏 -->
+        <nav class="navigation">
+            <div class="nav-logo">100</div>
+            <ul class="nav-links">
+                <li data-section="letters-section"><i class="fas fa-envelope"></i><span>信件</span></li>
+                <li data-section="photo-section"><i class="fas fa-image"></i><span>照片墙</span></li>
+                <li data-section="timeline-section"><i class="fas fa-clock"></i><span>时光轴</span></li>
+                <li data-section="story-section"><i class="fas fa-heart"></i><span>我们的故事</span></li>
+            </ul>
+            <div class="music-control">
+                <i class="fas fa-music" id="music-toggle"></i>
+            </div>
+        </nav>
+
+        <!-- 信件区域 -->
+        <section id="letters-section" class="content-section">
+            <div class="section-header">
+                <h2>💌 我们的信件</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="my-letters">我写给你的</button>
+                    <button class="tab-btn" data-tab="your-letters">你写给我的</button>
+                </div>
+            </div>
+            
+            <div class="letters-container">
+                <div class="tab-content active" id="my-letters">
+                    <!-- 我写给女友的信件将在这里动态加载 -->
+                </div>
+                <div class="tab-content" id="your-letters">
+                    <!-- 女友写给我的信件将在这里动态加载 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 照片墙区域 -->
+        <section id="photo-section" class="content-section">
+            <div class="section-header">
+                <h2>📸 我们的照片墙</h2>
+            </div>
+            <div class="gallery-container">
+                <!-- 照片和视频将在这里动态加载 -->
+            </div>
+        </section>
+
+        <!-- 时间轴区域 -->
+        <section id="timeline-section" class="content-section">
+            <div class="section-header">
+                <h2>⏳ 我们的时光轴</h2>
+            </div>
+            <div class="timeline">
+                <!-- 时间轴内容将在这里动态加载 -->
+            </div>
+        </section>
+
+        <!-- 我们的故事区域 -->
+        <section id="story-section" class="content-section">
+            <div class="section-header">
+                <h2>💖 我们的故事</h2>
+            </div>
+            <div class="story-container">
+                <div class="story-content">
+                    <h3>100天的点滴</h3>
+                    <p>这一百天，我们一起经历了许多难忘的瞬间...</p>
+                    <!-- 故事内容将在这里添加 -->
+                    <div class="milestone">
+                        <div class="milestone-number">100</div>
+                        <div class="milestone-text">天的旅程</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 底部导航（移动端） -->
+    <div class="mobile-nav" id="mobile-nav" style="display: none;">
+        <div class="nav-item" data-section="letters-section">
+            <i class="fas fa-envelope"></i>
+            <span>信件</span>
+        </div>
+        <div class="nav-item" data-section="photo-section">
+            <i class="fas fa-image"></i>
+            <span>照片</span>
+        </div>
+        <div class="nav-item" data-section="timeline-section">
+            <i class="fas fa-clock"></i>
+            <span>时光</span>
+        </div>
+        <div class="nav-item" data-section="story-section">
+            <i class="fas fa-heart"></i>
+            <span>故事</span>
         </div>
     </div>
+
+    <!-- 图片查看器 -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <span class="close-lightbox">&times;</span>
+            <div class="lightbox-image-container">
+                <img id="lightbox-image">
+                <video id="lightbox-video" controls></video>
+            </div>
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="background-music" loop>
+        <source src="https://music.163.com/song/media/outer/url?id=1901371647.mp3" type="audio/mpeg">
+    </audio>
 
     <footer class="footer">
         <p>Made with 💖 for you | 2024</p>
