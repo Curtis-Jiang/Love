@@ -6,21 +6,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageLoader = document.getElementById('page-loader');
     const progressBar = document.getElementById('progress-bar');
     
+    if (!pageLoader) {
+        console.error('找不到页面加载器元素!');
+    }
+    
+    if (!progressBar) {
+        console.error('找不到进度条元素!');
+    }
+    
     // 更新进度条
     let progress = 0;
     const interval = setInterval(() => {
         progress += Math.random() * 10;
         if (progress > 100) progress = 100;
-        progressBar.style.width = progress + '%';
+        if (progressBar) {
+            progressBar.style.width = progress + '%';
+        }
         
         if (progress === 100) {
             clearInterval(interval);
             setTimeout(() => {
-                pageLoader.classList.add('hidden');
-                setTimeout(() => {
-                    pageLoader.remove();
-                    console.log('加载动画已移除');
-                }, 500);
+                if (pageLoader) {
+                    pageLoader.style.opacity = '0';
+                    setTimeout(() => {
+                        if (pageLoader.parentNode) {
+                            pageLoader.parentNode.removeChild(pageLoader);
+                        }
+                        console.log('加载动画已移除');
+                    }, 500);
+                }
             }, 500);
         }
     }, 200);
@@ -32,6 +46,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileNav = document.getElementById('mobile-nav');
     const musicToggle = document.getElementById('music-toggle');
     const backgroundMusic = document.getElementById('background-music');
+    
+    // 检查元素是否存在
+    if (!envelope) console.error('找不到信封元素!');
+    if (!welcomeScreen) console.error('找不到欢迎屏幕元素!');
+    if (!mainContent) console.error('找不到主内容元素!');
+    if (!mobileNav) console.error('找不到移动导航元素!');
+    if (!musicToggle) console.error('找不到音乐控制元素!');
+    if (!backgroundMusic) console.error('找不到背景音乐元素!');
+    else console.log('背景音乐元素已找到:', backgroundMusic.innerHTML);
     
     // 信件容器
     const myLettersContainer = document.getElementById('my-letters');
@@ -50,155 +73,177 @@ document.addEventListener('DOMContentLoaded', function() {
     // 内容区域
     const contentSections = document.querySelectorAll('.content-section');
     
-    // 标签页按钮
-    const tabButtons = document.querySelectorAll('.tab-btn');
+    // 初始化
+    console.log('开始初始化网站...');
+    
+    // 尝试预加载音乐
+    if (backgroundMusic) {
+        console.log('尝试预加载背景音乐...');
+        backgroundMusic.load();
+    }
+    
+    // 打开信封动画
+    if (envelope) {
+        envelope.addEventListener('click', function() {
+            console.log('信封被点击');
+            const envelopeElement = envelope.querySelector('.envelope');
+            if (envelopeElement) {
+                envelopeElement.classList.add('open');
+                
+                // 尝试播放背景音乐
+                if (backgroundMusic) {
+                    console.log('尝试播放背景音乐...');
+                    backgroundMusic.play().then(() => {
+                        console.log('背景音乐播放成功!');
+                        if (musicToggle) {
+                            musicToggle.classList.add('playing');
+                        }
+                    }).catch(e => {
+                        console.error('背景音乐播放失败:', e);
+                    });
+                }
+                
+                // 3秒后显示主内容
+                setTimeout(() => {
+                    console.log('准备显示主内容...');
+                    if (welcomeScreen) {
+                        welcomeScreen.style.opacity = '0';
+                    }
+                    
+                    setTimeout(() => {
+                        if (welcomeScreen) {
+                            welcomeScreen.style.display = 'none';
+                        }
+                        if (mainContent) {
+                            mainContent.style.display = 'block';
+                            setTimeout(() => {
+                                mainContent.style.opacity = '1';
+                            }, 100);
+                        }
+                        if (mobileNav) {
+                            mobileNav.style.display = 'flex';
+                            setTimeout(() => {
+                                mobileNav.style.opacity = '1';
+                            }, 100);
+                        }
+                        
+                        // 默认显示第一个内容区域
+                        if (contentSections && contentSections.length > 0) {
+                            contentSections[0].style.display = 'block';
+                            setTimeout(() => {
+                                contentSections[0].classList.add('active');
+                            }, 100);
+                        }
+                        
+                        // 加载内容
+                        loadContent();
+                    }, 500);
+                }, 3000);
+            }
+        });
+    }
+    
+    // 音乐控制
+    if (musicToggle && backgroundMusic) {
+        musicToggle.addEventListener('click', function() {
+            console.log('音乐控制按钮被点击');
+            if (backgroundMusic.paused) {
+                backgroundMusic.play().then(() => {
+                    console.log('背景音乐播放成功!');
+                    musicToggle.classList.add('playing');
+                }).catch(e => console.error('背景音乐播放失败:', e));
+            } else {
+                backgroundMusic.pause();
+                console.log('背景音乐已暂停');
+                musicToggle.classList.remove('playing');
+            }
+        });
+    }
+    
+    // 导航切换
+    const navLinks = document.querySelectorAll('.nav-links li, .nav-item');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            const sectionId = this.getAttribute('data-section');
+            console.log('导航链接被点击:', sectionId);
+            
+            // 移除所有活动状态
+            navLinks.forEach(l => l.classList.remove('active'));
+            contentSections.forEach(section => {
+                section.style.display = 'none';
+                section.classList.remove('active');
+            });
+            
+            // 添加活动状态
+            this.classList.add('active');
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                setTimeout(() => {
+                    targetSection.classList.add('active');
+                }, 10);
+            }
+        });
+    });
+    
+    // 标签页切换
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            console.log('标签按钮被点击:', tabId);
+            
+            // 移除所有活动状态
+            tabBtns.forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 添加活动状态
+            this.classList.add('active');
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+        });
+    });
+    
+    // 默认激活第一个导航项
+    if (navLinks && navLinks.length > 0) {
+        navLinks[0].classList.add('active');
+    }
+    
+    // 播放声音效果
+    function playSound(url) {
+        console.log('尝试播放声音:', url);
+        const audio = new Audio(url);
+        audio.volume = 0.3;
+        audio.play().catch(e => {
+            console.error('声音播放失败:', e);
+        });
+    }
     
     // 全局变量
     let photos = [];
     let currentPhotoIndex = 0;
     let backgroundImages = [];
-    
-    // 点击信封事件
-    envelope.addEventListener('click', function() {
-        console.log('信封被点击，开始打开动画');
-        this.querySelector('.envelope').classList.add('open');
-        
-        // 播放可爱的音效
-        playSound('https://www.soundjay.com/buttons/sounds/button-09.mp3');
-        
-        // 延迟显示主内容
-        setTimeout(() => {
-            welcomeScreen.style.opacity = '0';
-            setTimeout(() => {
-                welcomeScreen.style.display = 'none';
-                mainContent.style.display = 'block';
-                mobileNav.style.display = 'flex';
-                
-                setTimeout(() => {
-                    mainContent.classList.add('visible');
-                    console.log('开始加载内容...');
-                    loadContent();
-                    
-                    // 默认激活第一个部分
-                    contentSections[0].classList.add('active');
-                    document.querySelector('.nav-links li').classList.add('active');
-                    document.querySelector('.nav-item').classList.add('active');
-                    
-                    // 添加装饰元素
-                    addDecorativeElements();
-                    
-                    // 自动播放背景音乐
-                    // backgroundMusic.play().catch(e => console.log("背景音乐播放失败:", e));
-                }, 100);
-            }, 500);
-        }, 1500);
-    });
-    
-    // 导航点击事件
-    document.querySelectorAll('.nav-links li, .nav-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const targetSection = this.getAttribute('data-section');
-            console.log('导航切换至:', targetSection);
-            
-            // 移除所有active类
-            document.querySelectorAll('.nav-links li, .nav-item').forEach(el => el.classList.remove('active'));
-            contentSections.forEach(section => section.classList.remove('active'));
-            
-            // 添加active类到当前选中项和对应内容
-            document.querySelectorAll(`[data-section="${targetSection}"]`).forEach(el => el.classList.add('active'));
-            document.getElementById(targetSection).classList.add('active');
-            
-            // 播放音效
-            playSound('https://www.soundjay.com/buttons/sounds/button-19.mp3');
-        });
-    });
-    
-    // 标签切换事件
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const tabId = this.getAttribute('data-tab');
-            console.log('标签切换至:', tabId);
-            
-            // 移除所有active类
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // 添加active类到当前选中项和对应内容
-            this.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-            
-            // 播放音效
-            playSound('https://www.soundjay.com/buttons/sounds/button-10.mp3');
-        });
-    });
-    
-    // 背景音乐控制
-    musicToggle.addEventListener('click', function() {
-        if (backgroundMusic.paused) {
-            backgroundMusic.play().then(() => {
-                this.classList.add('playing');
-                this.innerHTML = '<i class="fas fa-music"></i>';
-                console.log('背景音乐开始播放');
-            }).catch(e => console.log("背景音乐播放失败:", e));
-        } else {
-            backgroundMusic.pause();
-            this.classList.remove('playing');
-            this.innerHTML = '<i class="fas fa-music-slash"></i>';
-            console.log('背景音乐已暂停');
-        }
-    });
-    
-    // 关闭灯箱
-    closeLightbox.addEventListener('click', () => {
-        lightbox.classList.remove('active');
-        lightboxVideo.pause();
-    });
-    
-    // 点击灯箱背景关闭
-    lightbox.addEventListener('click', function(e) {
-        if (e.target === this) {
-            lightbox.classList.remove('active');
-            lightboxVideo.pause();
-        }
-    });
-    
-    // ESC键关闭灯箱
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
-            lightbox.classList.remove('active');
-            lightboxVideo.pause();
-        }
-    });
-    
-    // 播放音效函数
-    function playSound(url) {
-        const audio = new Audio(url);
-        audio.volume = 0.3;
-        audio.play().catch(e => {
-            console.log("音频播放失败:", e);
-        });
-    }
-    
-    // 加载内容函数
+
+    // 加载内容
     async function loadContent() {
+        console.log('开始加载内容...');
         try {
-            console.log('开始加载信件...');
             // 加载信件
             await loadLetters();
             
-            console.log('开始加载照片墙...');
             // 加载照片墙
             loadGallery();
             
-            console.log('开始加载时间轴...');
-            // 加载时间轴
-            loadTimeline();
+            // 添加装饰元素
+            addDecorativeElements();
             
-            console.log('所有内容加载完成');
+            console.log('所有内容加载完成!');
         } catch (error) {
-            console.error('内容加载失败:', error);
-            // 使用示例数据
-            useExampleContent();
+            console.error('加载内容时出错:', error);
         }
     }
     
@@ -452,164 +497,219 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 加载照片墙
     function loadGallery() {
-        console.log('加载照片墙');
+        console.log('开始加载照片墙...');
         
-        // 清空照片容器
-        const galleryContainer = document.querySelector('.gallery-container');
-        galleryContainer.innerHTML = '';
-        
-        // 模拟照片数据
-        photos = [
-            { type: 'image', url: 'photos/image.png', caption: '我们的美好时光' },
-            { type: 'image', url: 'photos/image copy.png', caption: '美好的回忆' },
-            { type: 'video', url: 'photos/84996_1740840651.mp4', caption: '有趣的瞬间' },
-            { type: 'image', url: 'photos/image copy 2.png', caption: '一起度过的时光' },
-            { type: 'image', url: 'photos/image copy 3.png', caption: '美好的回忆' },
-            { type: 'image', url: 'photos/image copy 4.png', caption: '甜蜜时刻' },
-            { type: 'image', url: 'photos/image copy 5.png', caption: '难忘的日子' },
-            { type: 'image', url: 'photos/image copy 6.png', caption: '珍贵的时光' },
-            { type: 'image', url: 'photos/image copy 7.png', caption: '美好回忆' },
-            { type: 'image', url: 'photos/image copy 8.png', caption: '幸福的日子' },
-            { type: 'image', url: 'photos/image copy 9.png', caption: '甜蜜瞬间' },
-            { type: 'video', url: 'photos/77344_1740250598.mp4', caption: '一段美好的记忆' },
-            { type: 'image', url: 'photos/image copy 10.png', caption: '美好的一天' }
+        // 模拟照片和视频列表
+        const mediaItems = [
+            { type: 'image', url: 'photos/photo1.jpg', caption: '我们的第一张合照' },
+            { type: 'image', url: 'photos/photo2.jpg', caption: '一起看日落' },
+            { type: 'image', url: 'photos/photo3.jpg', caption: '周末野餐' },
+            { type: 'video', url: 'photos/video1.mp4', caption: '一起唱歌的视频' },
+            { type: 'image', url: 'photos/photo4.jpg', caption: '公园散步' },
+            { type: 'image', url: 'photos/photo5.jpg', caption: '生日派对' },
+            { type: 'image', url: 'photos/photo6.jpg', caption: '咖啡馆约会' },
+            { type: 'video', url: 'photos/video2.mp4', caption: '一起跳舞' },
+            { type: 'image', url: 'photos/photo7.jpg', caption: '海边漫步' },
+            { type: 'image', url: 'photos/photo8.jpg', caption: '雪中嬉戏' }
         ];
         
-        // 预加载所有照片
-        photos.forEach(item => {
-            if (item.type === 'image') {
-                const img = new Image();
-                img.src = item.url;
-                img.onerror = () => {
-                    console.warn(`照片加载失败: ${item.url}，使用备用图片`);
-                    item.url = 'images/photo-placeholder.jpg';
-                };
-            }
-        });
+        // 存储照片数组供全屏查看使用
+        photos = mediaItems;
         
-        // 创建全屏照片查看容器
-        const fullscreenContainer = document.createElement('div');
-        fullscreenContainer.className = 'fullscreen-photo-container';
-        fullscreenContainer.innerHTML = `
-            <div class="photo-wrapper">
-                <img src="" alt="" class="fullscreen-photo">
-                <video class="fullscreen-video" controls></video>
-            </div>
-            <div class="photo-caption"></div>
-            <div class="photo-instruction">向下滑动查看下一张</div>
-            <div class="close-fullscreen">&times;</div>
-        `;
-        galleryContainer.appendChild(fullscreenContainer);
-        
-        // 获取元素
-        const photoWrapper = fullscreenContainer.querySelector('.photo-wrapper');
-        const fullscreenPhoto = fullscreenContainer.querySelector('.fullscreen-photo');
-        const fullscreenVideo = fullscreenContainer.querySelector('.fullscreen-video');
-        const photoCaption = fullscreenContainer.querySelector('.photo-caption');
-        const closeBtn = fullscreenContainer.querySelector('.close-fullscreen');
-        
-        // 关闭按钮事件
-        closeBtn.addEventListener('click', () => {
-            fullscreenContainer.classList.remove('active');
-        });
-        
-        // 创建照片缩略图
-        photos.forEach((item, index) => {
-            try {
+        // 清空容器
+        if (galleryContainer) {
+            galleryContainer.innerHTML = '';
+            
+            // 创建照片墙项目
+            mediaItems.forEach((item, index) => {
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
+                galleryItem.setAttribute('data-index', index);
                 
                 if (item.type === 'image') {
-                    galleryItem.innerHTML = `<img src="${item.url}" alt="${item.caption}">`;
-                } else {
-                    galleryItem.innerHTML = `
-                        <video poster="${item.url.replace('.mp4', '.jpg')}" preload="none">
-                            <source src="${item.url}" type="video/mp4">
-                        </video>
-                        <div class="video-indicator"><i class="fas fa-play"></i></div>
-                    `;
+                    const img = document.createElement('img');
+                    img.src = item.url;
+                    img.alt = item.caption;
+                    img.loading = 'lazy';
+                    galleryItem.appendChild(img);
+                } else if (item.type === 'video') {
+                    const video = document.createElement('video');
+                    video.src = item.url;
+                    video.muted = true;
+                    video.loop = true;
+                    video.preload = 'metadata';
+                    
+                    // 鼠标悬停时播放视频
+                    galleryItem.addEventListener('mouseenter', () => {
+                        video.play().catch(e => console.error('视频播放失败:', e));
+                    });
+                    
+                    galleryItem.addEventListener('mouseleave', () => {
+                        video.pause();
+                    });
+                    
+                    galleryItem.appendChild(video);
+                    
+                    // 添加视频指示器
+                    const videoIndicator = document.createElement('div');
+                    videoIndicator.className = 'video-indicator';
+                    videoIndicator.innerHTML = '<i class="fas fa-play"></i>';
+                    galleryItem.appendChild(videoIndicator);
                 }
-                
-                galleryContainer.appendChild(galleryItem);
                 
                 // 点击打开全屏查看
                 galleryItem.addEventListener('click', () => {
                     showFullscreenPhoto(index);
                 });
                 
-                console.log(`添加照片/视频 ${index + 1}/${photos.length}`);
-            } catch (error) {
-                console.error(`处理照片/视频项 ${index} 时出错:`, error);
+                galleryContainer.appendChild(galleryItem);
+            });
+            
+            console.log('照片墙加载完成，共加载 ' + mediaItems.length + ' 个媒体项');
+        } else {
+            console.error('找不到照片墙容器!');
+        }
+        
+        // 创建全屏照片查看器
+        createFullscreenPhotoViewer();
+    }
+    
+    // 创建全屏照片查看器
+    function createFullscreenPhotoViewer() {
+        console.log('创建全屏照片查看器...');
+        
+        // 检查是否已存在
+        let container = document.querySelector('.fullscreen-photo-container');
+        if (container) {
+            console.log('全屏照片查看器已存在，跳过创建');
+            return;
+        }
+        
+        // 创建容器
+        container = document.createElement('div');
+        container.className = 'fullscreen-photo-container';
+        
+        // 创建关闭按钮
+        const closeBtn = document.createElement('div');
+        closeBtn.className = 'close-fullscreen';
+        closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        closeBtn.addEventListener('click', () => {
+            container.classList.remove('active');
+        });
+        
+        // 创建照片包装器
+        const photoWrapper = document.createElement('div');
+        photoWrapper.className = 'photo-wrapper';
+        
+        // 创建照片元素
+        const photo = document.createElement('img');
+        photo.className = 'fullscreen-photo';
+        
+        // 创建视频元素
+        const video = document.createElement('video');
+        video.className = 'fullscreen-video';
+        video.controls = true;
+        
+        // 创建说明文字
+        const caption = document.createElement('div');
+        caption.className = 'photo-caption';
+        
+        // 创建操作提示
+        const instruction = document.createElement('div');
+        instruction.className = 'photo-instruction';
+        instruction.textContent = '向下滑动或滚动查看下一张 | 按ESC关闭';
+        
+        // 组装元素
+        photoWrapper.appendChild(photo);
+        photoWrapper.appendChild(video);
+        photoWrapper.appendChild(caption);
+        container.appendChild(closeBtn);
+        container.appendChild(photoWrapper);
+        container.appendChild(instruction);
+        document.body.appendChild(container);
+        
+        // 添加触摸事件
+        let startY = 0;
+        container.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+        
+        container.addEventListener('touchmove', (e) => {
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            
+            if (diff > 50) {  // 向下滑动超过50px
+                e.preventDefault();
+                showFullscreenPhoto(getRandomNextPhotoIndex());
+                startY = currentY;
             }
         });
         
-        // 显示全屏照片
-        function showFullscreenPhoto(index) {
-            currentPhotoIndex = index;
-            const item = photos[index];
-            
-            // 重置显示
-            fullscreenPhoto.style.display = 'none';
-            fullscreenVideo.style.display = 'none';
-            
-            if (item.type === 'image') {
-                fullscreenPhoto.src = item.url;
-                fullscreenPhoto.style.display = 'block';
-            } else {
-                fullscreenVideo.innerHTML = `<source src="${item.url}" type="video/mp4">`;
-                fullscreenVideo.style.display = 'block';
-                fullscreenVideo.load();
-                fullscreenVideo.play().catch(e => console.log("视频播放失败:", e));
-            }
-            
-            photoCaption.textContent = item.caption;
-            fullscreenContainer.classList.add('active');
-        }
-        
-        // 添加滑动事件
-        let touchStartY = 0;
-        
-        photoWrapper.addEventListener('touchstart', function(e) {
-            touchStartY = e.touches[0].clientY;
-        }, false);
-        
-        photoWrapper.addEventListener('touchmove', function(e) {
-            e.preventDefault(); // 防止页面滚动
-        }, false);
-        
-        photoWrapper.addEventListener('touchend', function(e) {
-            const touchEndY = e.changedTouches[0].clientY;
-            const diffY = touchStartY - touchEndY;
-            
-            // 向下滑动超过50px
-            if (diffY < -50) {
-                currentPhotoIndex = getRandomNextPhotoIndex();
-                showFullscreenPhoto(currentPhotoIndex);
-            }
-        }, false);
-        
-        // 为非触摸设备添加鼠标滚轮事件
-        photoWrapper.addEventListener('wheel', function(e) {
-            if (e.deltaY > 0) {
-                currentPhotoIndex = getRandomNextPhotoIndex();
-                showFullscreenPhoto(currentPhotoIndex);
+        // 添加鼠标滚轮事件
+        container.addEventListener('wheel', (e) => {
+            if (e.deltaY > 0) {  // 向下滚动
+                showFullscreenPhoto(getRandomNextPhotoIndex());
             }
         });
         
         // 添加键盘事件
-        document.addEventListener('keydown', function(e) {
-            if (fullscreenContainer.classList.contains('active')) {
-                if (e.key === 'ArrowDown' || e.key === 'Space') {
-                    currentPhotoIndex = getRandomNextPhotoIndex();
-                    showFullscreenPhoto(currentPhotoIndex);
-                } else if (e.key === 'Escape') {
-                    fullscreenContainer.classList.remove('active');
-                }
+        document.addEventListener('keydown', (e) => {
+            if (!container.classList.contains('active')) return;
+            
+            if (e.key === 'Escape') {
+                container.classList.remove('active');
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                showFullscreenPhoto(getRandomNextPhotoIndex());
             }
         });
+        
+        console.log('全屏照片查看器创建完成');
     }
     
-    // 随机获取下一张照片索引
+    // 显示全屏照片
+    function showFullscreenPhoto(index) {
+        console.log('显示全屏照片，索引:', index);
+        
+        const container = document.querySelector('.fullscreen-photo-container');
+        if (!container) {
+            console.error('找不到全屏照片容器!');
+            return;
+        }
+        
+        const photo = container.querySelector('.fullscreen-photo');
+        const video = container.querySelector('.fullscreen-video');
+        const caption = container.querySelector('.photo-caption');
+        
+        if (!photo || !video || !caption) {
+            console.error('找不到全屏照片元素!');
+            return;
+        }
+        
+        if (index >= 0 && index < photos.length) {
+            const item = photos[index];
+            currentPhotoIndex = index;
+            
+            // 重置显示
+            photo.style.display = 'none';
+            video.style.display = 'none';
+            
+            if (item.type === 'image') {
+                photo.src = item.url;
+                photo.style.display = 'block';
+            } else if (item.type === 'video') {
+                video.src = item.url;
+                video.style.display = 'block';
+                video.play().catch(e => console.error('视频播放失败:', e));
+            }
+            
+            caption.textContent = item.caption;
+            container.classList.add('active');
+        } else {
+            console.error('照片索引超出范围:', index);
+        }
+    }
+    
+    // 获取随机的下一张照片索引
     function getRandomNextPhotoIndex() {
         if (photos.length <= 1) return 0;
         
@@ -660,41 +760,48 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 添加装饰元素
     function addDecorativeElements() {
-        console.log('添加装饰元素');
-        // 添加浮动爱心
-        for (let i = 0; i < 10; i++) {
-            createFloatingHeart();
-        }
+        console.log('添加装饰元素...');
+        
+        // 创建浮动心形
+        setInterval(createFloatingHeart, 2000);
+        
+        // 添加背景图片
+        backgroundImages = [
+            'images/bg1.jpg',
+            'images/bg2.jpg',
+            'images/bg3.jpg'
+        ];
+        
+        // 预加载背景图片
+        backgroundImages.forEach(url => {
+            const img = new Image();
+            img.src = url;
+        });
+        
+        console.log('装饰元素添加完成');
     }
     
-    // 创建浮动爱心
+    // 创建浮动心形
     function createFloatingHeart() {
         const heart = document.createElement('div');
         heart.className = 'floating-heart';
-        heart.innerHTML = '❤️';
         
         // 随机位置
         const posX = Math.random() * window.innerWidth;
-        const posY = Math.random() * window.innerHeight;
+        const size = Math.random() * 20 + 10;
         
-        // 随机大小
-        const size = 10 + Math.random() * 20;
-        
-        // 随机动画时长
-        const duration = 5 + Math.random() * 10;
-        
-        heart.style.cssText = `
-            position: fixed;
-            left: ${posX}px;
-            top: ${posY}px;
-            font-size: ${size}px;
-            opacity: ${0.2 + Math.random() * 0.3};
-            z-index: -1;
-            animation: float ${duration}s ease-in-out infinite;
-            animation-delay: ${Math.random() * 5}s;
-        `;
+        heart.style.left = posX + 'px';
+        heart.style.width = size + 'px';
+        heart.style.height = size + 'px';
         
         document.body.appendChild(heart);
+        
+        // 动画结束后移除
+        setTimeout(() => {
+            if (heart.parentNode) {
+                heart.parentNode.removeChild(heart);
+            }
+        }, 4000);
     }
     
     // 如果无法从服务器加载信件，使用示例数据
