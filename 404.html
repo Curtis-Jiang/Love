@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0;url=/">
+    <title>重定向中...</title>
+    <style>
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #fff9fc;
+            color: #333333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff85a2;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 20px;
+        }
+        a {
+            color: #ff85a2;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 2px solid #ff85a2;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        a:hover {
+            background-color: #ff85a2;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>页面走丢了...</h1>
+    <p>正在为您重定向到首页，请稍候...</p>
+    <a href="/">如果没有自动跳转，请点击这里</a>
+    
+    <script>
+        // 立即重定向到首页
+        window.location.href = '/';
+    </script>
+</body>
+</html> 

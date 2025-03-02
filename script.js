@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // 添加调试信息
+    console.log('页面加载完成，开始初始化...');
+    
     // 加载动画和进度条
     const pageLoader = document.getElementById('page-loader');
     const progressBar = document.getElementById('progress-bar');
@@ -16,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pageLoader.classList.add('hidden');
                 setTimeout(() => {
                     pageLoader.remove();
+                    console.log('加载动画已移除');
                 }, 500);
             }, 500);
         }
@@ -51,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 点击信封事件
     envelope.addEventListener('click', function() {
+        console.log('信封被点击，开始打开动画');
         this.querySelector('.envelope').classList.add('open');
         
         // 播放可爱的音效
@@ -66,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 setTimeout(() => {
                     mainContent.classList.add('visible');
+                    console.log('开始加载内容...');
                     loadContent();
                     
                     // 默认激活第一个部分
@@ -87,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.nav-links li, .nav-item').forEach(item => {
         item.addEventListener('click', function() {
             const targetSection = this.getAttribute('data-section');
+            console.log('导航切换至:', targetSection);
             
             // 移除所有active类
             document.querySelectorAll('.nav-links li, .nav-item').forEach(el => el.classList.remove('active'));
@@ -105,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
             const tabId = this.getAttribute('data-tab');
+            console.log('标签切换至:', tabId);
             
             // 移除所有active类
             tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -125,11 +133,13 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundMusic.play().then(() => {
                 this.classList.add('playing');
                 this.innerHTML = '<i class="fas fa-music"></i>';
+                console.log('背景音乐开始播放');
             }).catch(e => console.log("背景音乐播放失败:", e));
         } else {
             backgroundMusic.pause();
             this.classList.remove('playing');
             this.innerHTML = '<i class="fas fa-music-slash"></i>';
+            console.log('背景音乐已暂停');
         }
     });
     
@@ -159,61 +169,131 @@ document.addEventListener('DOMContentLoaded', function() {
     function playSound(url) {
         const audio = new Audio(url);
         audio.volume = 0.3;
-        audio.play().catch(e => console.log("音频播放失败:", e));
+        audio.play().catch(e => {
+            console.log("音频播放失败:", e);
+        });
     }
     
     // 加载内容函数
     async function loadContent() {
-        // 加载信件
-        await loadLetters();
-        
-        // 加载照片墙
-        loadGallery();
-        
-        // 加载时间轴
-        loadTimeline();
+        try {
+            console.log('开始加载信件...');
+            // 加载信件
+            await loadLetters();
+            
+            console.log('开始加载照片墙...');
+            // 加载照片墙
+            loadGallery();
+            
+            console.log('开始加载时间轴...');
+            // 加载时间轴
+            loadTimeline();
+            
+            console.log('所有内容加载完成');
+        } catch (error) {
+            console.error('内容加载失败:', error);
+            // 使用示例数据
+            useExampleContent();
+        }
     }
     
     // 从MD文件加载信件
     async function loadLetters() {
         try {
-            // 获取doc目录下的文件列表
-            const response = await fetch('doc-list.json');
-            if (!response.ok) {
-                throw new Error('无法获取文件列表');
-            }
+            // 尝试直接使用硬编码的文件列表，避免fetch请求
+            console.log('使用硬编码的文件列表');
+            const files = [
+                "致璟涵小姐.md",
+                "TO_安定剂.md",
+                "TO_21首.md",
+                "TO_猫狗.md",
+                "TO_onlyone.md",
+                "考试规划两则.md",
+                "考试规划一则.md",
+                "新鲜感.md",
+                "梦.md",
+                "念你千千万万.md",
+                "小狗与姐姐.md",
+                "西安随笔.md",
+                "我爱你.md",
+                "表白.md",
+                "新年快乐.md",
+                "葡萄成熟时.md",
+                "矛盾一则.md",
+                "两人走进的过程.md",
+                "情人节随笔2️⃣.md",
+                "情人节随笔一则.md",
+                "情人节特辑.md",
+                "香港随笔1.md",
+                "小猫🐱小狗🐶.md",
+                "璟涵的第一次未来规划.md",
+                "见面前的最后一封.md",
+                "第一次约会计划.md",
+                "恋爱第一课.md"
+            ];
             
-            const files = await response.json();
+            console.log(`找到 ${files.length} 个文件`);
+            
+            // 初始化计数器
+            let successCount = 0;
+            let errorCount = 0;
             
             // 处理每个信件文件
             for (const file of files) {
-                // 跳过非MD文件和图片文件
-                if (!file.endsWith('.md')) continue;
-                
-                const isYourLetter = file.startsWith('TO_');
-                const fileResponse = await fetch(`doc/${file}`);
-                if (!fileResponse.ok) continue;
-                
-                let content = await fileResponse.text();
-                
-                // 解析日期 - 通常在第一行
-                let date = '';
-                const firstLine = content.split('\n')[0].trim();
-                if (/^\d+\.\d+(\.\d+)?$/.test(firstLine)) {
-                    date = parseDate(firstLine);
-                    // 移除第一行
-                    content = content.substring(content.indexOf('\n') + 1).trim();
+                try {
+                    // 跳过非MD文件和图片文件
+                    if (!file.endsWith('.md')) continue;
+                    
+                    console.log(`处理文件: ${file}`);
+                    const isYourLetter = file.startsWith('TO_');
+                    
+                    try {
+                        // 尝试获取文件内容
+                        const fileResponse = await fetch(`doc/${file}`);
+                        
+                        if (!fileResponse.ok) {
+                            console.warn(`无法获取文件 ${file}, 状态码: ${fileResponse.status}`);
+                            errorCount++;
+                            continue;
+                        }
+                        
+                        let content = await fileResponse.text();
+                        
+                        // 解析日期 - 通常在第一行
+                        let date = '';
+                        const firstLine = content.split('\n')[0].trim();
+                        if (/^\d+\.\d+(\.\d+)?$/.test(firstLine)) {
+                            date = parseDate(firstLine);
+                            // 移除第一行
+                            content = content.substring(content.indexOf('\n') + 1).trim();
+                        }
+                        
+                        // 创建信件卡片
+                        const letterCard = createLetterCard(file, date, content);
+                        
+                        // 添加到相应容器
+                        if (isYourLetter) {
+                            yourLettersContainer.appendChild(letterCard);
+                        } else {
+                            myLettersContainer.appendChild(letterCard);
+                        }
+                        
+                        successCount++;
+                    } catch (fileError) {
+                        console.error(`处理文件 ${file} 时出错:`, fileError);
+                        errorCount++;
+                    }
+                } catch (itemError) {
+                    console.error('处理单个信件时出错:', itemError);
+                    errorCount++;
                 }
-                
-                // 创建信件卡片
-                const letterCard = createLetterCard(file, date, content);
-                
-                // 添加到相应容器
-                if (isYourLetter) {
-                    yourLettersContainer.appendChild(letterCard);
-                } else {
-                    myLettersContainer.appendChild(letterCard);
-                }
+            }
+            
+            console.log(`成功加载 ${successCount} 个信件，失败 ${errorCount} 个`);
+            
+            // 如果没有成功加载任何信件，抛出错误
+            if (successCount === 0) {
+                throw new Error('没有成功加载任何信件');
             }
             
             // 按日期排序信件
@@ -320,6 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 打开完整信件
     function openFullLetter(title, date, content) {
+        console.log(`打开信件: ${title}`);
         // 创建灯箱样式的全屏信件
         const fullLetter = document.createElement('div');
         fullLetter.className = 'full-letter-container';
@@ -366,8 +447,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 加载照片墙
     function loadGallery() {
-        // 这里我们需要从服务器获取照片文件列表
-        // 由于GitHub Pages限制，这里使用模拟数据
+        console.log('加载照片墙');
+        // 这里我们使用硬编码的照片列表，避免文件路径问题
         
         // 模拟照片数据
         const photos = [
@@ -387,33 +468,40 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         
         // 创建照片/视频元素
-        photos.forEach(item => {
-            const galleryItem = document.createElement('div');
-            galleryItem.className = 'gallery-item';
-            
-            if (item.type === 'image') {
-                galleryItem.innerHTML = `<img src="${item.url}" alt="${item.caption}">`;
-            } else {
-                galleryItem.innerHTML = `
-                    <video poster="${item.url.replace('.mp4', '.jpg')}" preload="none">
-                        <source src="${item.url}" type="video/mp4">
-                    </video>
-                    <div class="video-indicator"><i class="fas fa-play"></i></div>
-                `;
+        photos.forEach((item, index) => {
+            try {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                
+                if (item.type === 'image') {
+                    galleryItem.innerHTML = `<img src="${item.url}" alt="${item.caption}">`;
+                } else {
+                    galleryItem.innerHTML = `
+                        <video poster="${item.url.replace('.mp4', '.jpg')}" preload="none">
+                            <source src="${item.url}" type="video/mp4">
+                        </video>
+                        <div class="video-indicator"><i class="fas fa-play"></i></div>
+                    `;
+                }
+                
+                galleryContainer.appendChild(galleryItem);
+                
+                // 点击打开灯箱
+                galleryItem.addEventListener('click', () => {
+                    openLightbox(item);
+                    playSound('https://www.soundjay.com/buttons/sounds/button-20.mp3');
+                });
+                
+                console.log(`添加照片/视频 ${index + 1}/${photos.length}`);
+            } catch (error) {
+                console.error(`处理照片/视频项 ${index} 时出错:`, error);
             }
-            
-            galleryContainer.appendChild(galleryItem);
-            
-            // 点击打开灯箱
-            galleryItem.addEventListener('click', () => {
-                openLightbox(item);
-                playSound('https://www.soundjay.com/buttons/sounds/button-20.mp3');
-            });
         });
     }
     
     // 打开灯箱
     function openLightbox(item) {
+        console.log(`打开灯箱: ${item.type} - ${item.url}`);
         lightboxImage.style.display = 'none';
         lightboxVideo.style.display = 'none';
         
@@ -433,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 加载时间轴
     function loadTimeline() {
+        console.log('加载时间轴');
         const timeline = document.querySelector('.timeline');
         
         // 模拟时间轴数据
@@ -446,24 +535,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 创建时间轴项目
         events.forEach((event, index) => {
-            const item = document.createElement('div');
-            item.className = 'timeline-item';
-            
-            item.innerHTML = `
-                <div class="dot"></div>
-                <div class="timeline-date">${event.date}</div>
-                <div class="timeline-content">
-                    <h3>${event.title}</h3>
-                    <p>${event.content}</p>
-                </div>
-            `;
-            
-            timeline.appendChild(item);
+            try {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                
+                item.innerHTML = `
+                    <div class="dot"></div>
+                    <div class="timeline-date">${event.date}</div>
+                    <div class="timeline-content">
+                        <h3>${event.title}</h3>
+                        <p>${event.content}</p>
+                    </div>
+                `;
+                
+                timeline.appendChild(item);
+                console.log(`添加时间轴项 ${index + 1}/${events.length}`);
+            } catch (error) {
+                console.error(`处理时间轴项 ${index} 时出错:`, error);
+            }
         });
     }
     
     // 添加装饰元素
     function addDecorativeElements() {
+        console.log('添加装饰元素');
         // 添加浮动爱心
         for (let i = 0; i < 10; i++) {
             createFloatingHeart();
@@ -502,6 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 如果无法从服务器加载信件，使用示例数据
     function useExampleLetters() {
+        console.log('使用示例信件数据');
         // 我写给女友的信件示例
         const myLetters = [
             {
@@ -544,5 +640,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = createLetterCard(letter.title, letter.date, letter.content);
             yourLettersContainer.appendChild(card);
         });
+    }
+    
+    // 使用所有示例内容
+    function useExampleContent() {
+        console.log('使用所有示例内容');
+        useExampleLetters();
+        loadGallery();
+        loadTimeline();
     }
 }); 
