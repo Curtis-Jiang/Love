@@ -14,43 +14,63 @@
     <link rel="icon" href="https://i.imgur.com/8kMfqIr.png" type="image/png">
     <meta name="description" content="为我们在一起100天而创建的特别礼物">
     <meta name="theme-color" content="#ff85a2">
+    <!-- 添加Open Graph元数据，提升在社交媒体上的分享效果 -->
+    <meta property="og:title" content="💕 我们的100天 💕">
+    <meta property="og:description" content="为我们在一起100天而创建的特别礼物">
+    <meta property="og:image" content="https://i.imgur.com/8kMfqIr.png">
 </head>
 <body>
     <!-- 加载动画 -->
     <div class="page-loader" id="page-loader">
         <div class="loader"></div>
+        <div class="loader-text">加载中<span class="dots">...</span></div>
     </div>
     
     <!-- 加载进度条 -->
-    <div class="progress-bar" id="progress-bar"></div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
 
-    <!-- 欢迎页面 -->
-    <div class="welcome-screen" id="welcome-screen">
+    <!-- 欢迎屏幕 -->
+    <section class="welcome-screen" id="welcome-screen">
         <div class="welcome-content">
-            <h1 class="welcome-title">我们的<span class="accent-text">100</span>天</h1>
+            <div class="welcome-header">
+                <h1 class="welcome-title">
+                    <span class="accent-text">小猫</span> & <span class="accent-text">小狗</span>
+                    <br>100日纪念
+                </h1>
+                <div class="welcome-subtitle">执子之手，与子偕老</div>
+            </div>
             <div class="envelope-container" id="envelope">
                 <div class="envelope">
                     <div class="front"></div>
-                    <div class="letter" id="letter">
-                        <h1>亲爱的宝贝</h1>
-                        <p class="intro">这是我为你准备的特别礼物 💖</p>
-                        <p class="intro">这里记录了我们一路走来的点点滴滴，每一封信都承载着我对你满满的爱意。</p>
-                        <p class="intro">点击信封，开启我们的甜蜜回忆之旅...</p>
-                        <div class="letter-footer">
-                            <img src="https://i.imgur.com/8kMfqIr.png" class="letter-icon">
-                            <span>爱你的我</span>
-                            <img src="https://i.imgur.com/Qp8SWBl.png" class="letter-icon">
+                    <div class="back"></div>
+                    <div class="lid"></div>
+                    <div class="lid-shadow"></div>
+                    <div class="paper">
+                        <div class="letter">
+                            <h1>亲爱的小猫</h1>
+                            <p class="intro">这是我们相遇的第100天...</p>
+                            <p>这个网站记录了我们一起走过的美好时光，希望你喜欢这份特别的礼物。</p>
+                            <p>点击信封继续浏览我们的故事。</p>
+                            <div class="letter-footer">
+                                <p>执子之手 ❤️‍🔥 与子偕老</p>
+                                <p>爱你的小狗</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="back"></div>
-                    <div class="lid">
-                        <div class="lid-shadow"></div>
-                    </div>
-                    <div class="paper"></div>
                 </div>
+                <div class="envelope-hint">点击信封打开</div>
             </div>
         </div>
-    </div>
+        <div class="floating-elements">
+            <div class="floating-element" style="--delay: 0s; --size: 20px; --speed: 15s; --x: 20%">❤️</div>
+            <div class="floating-element" style="--delay: 2s; --size: 25px; --speed: 20s; --x: 80%">💕</div>
+            <div class="floating-element" style="--delay: 5s; --size: 15px; --speed: 17s; --x: 30%">💖</div>
+            <div class="floating-element" style="--delay: 8s; --size: 30px; --speed: 23s; --x: 70%">💘</div>
+            <div class="floating-element" style="--delay: 12s; --size: 18px; --speed: 19s; --x: 50%">💓</div>
+        </div>
+    </section>
 
     <!-- 主内容区域 -->
     <div class="main-content" id="main-content" style="display: none;">
@@ -58,16 +78,18 @@
         <nav class="navigation">
             <div class="nav-logo">100</div>
             <ul class="nav-links">
-                <li data-section="letters-section"><i class="fas fa-envelope"></i><span>信件</span></li>
+                <li data-section="letters-section" class="active"><i class="fas fa-envelope"></i><span>信件</span></li>
                 <li data-section="photo-section"><i class="fas fa-image"></i><span>照片墙</span></li>
+                <li data-section="timeline-section"><i class="fas fa-clock-rotate-left"></i><span>时间线</span></li>
             </ul>
             <div class="music-control">
                 <i class="fas fa-music" id="music-toggle"></i>
+                <div class="music-tooltip">播放音乐</div>
             </div>
         </nav>
 
         <!-- 信件区域 -->
-        <section id="letters-section" class="content-section">
+        <section id="letters-section" class="content-section active">
             <div class="section-header">
                 <h2>💌 我们的信件</h2>
                 <div class="tabs">
@@ -79,9 +101,17 @@
             <div class="letters-container">
                 <div class="tab-content active" id="my-letters">
                     <!-- 我写给女友的信件将在这里动态加载 -->
+                    <div class="loading-indicator">
+                        <div class="dot-pulse"></div>
+                        <span>加载信件中...</span>
+                    </div>
                 </div>
                 <div class="tab-content" id="your-letters">
                     <!-- 女友写给我的信件将在这里动态加载 -->
+                    <div class="loading-indicator">
+                        <div class="dot-pulse"></div>
+                        <span>加载信件中...</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -90,16 +120,39 @@
         <section id="photo-section" class="content-section">
             <div class="section-header">
                 <h2>📸 我们的照片墙</h2>
+                <div class="gallery-filter">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="photo">照片</button>
+                    <button class="filter-btn" data-filter="video">视频</button>
+                </div>
             </div>
             <div class="gallery-container">
                 <!-- 照片和视频将在这里动态加载 -->
+                <div class="loading-indicator">
+                    <div class="dot-pulse"></div>
+                    <span>加载照片中...</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 时间线区域 -->
+        <section id="timeline-section" class="content-section">
+            <div class="section-header">
+                <h2>⏳ 我们的故事</h2>
+            </div>
+            <div class="timeline-container">
+                <!-- 时间线内容将在这里动态加载 -->
+                <div class="loading-indicator">
+                    <div class="dot-pulse"></div>
+                    <span>构建时间线中...</span>
+                </div>
             </div>
         </section>
     </div>
 
     <!-- 底部导航（移动端） -->
     <div class="mobile-nav" id="mobile-nav" style="display: none;">
-        <div class="nav-item" data-section="letters-section">
+        <div class="nav-item active" data-section="letters-section">
             <i class="fas fa-envelope"></i>
             <span>信件</span>
         </div>
@@ -107,15 +160,36 @@
             <i class="fas fa-image"></i>
             <span>照片</span>
         </div>
+        <div class="nav-item" data-section="timeline-section">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>时间线</span>
+        </div>
     </div>
 
     <!-- 背景音乐 -->
-    <audio id="background-music" loop>
+    <audio id="background-music" loop preload="auto">
         <source src="music/EXO - First Snow.mp3" type="audio/mpeg">
         <source src="https://music.163.com/song/media/outer/url?id=28138270.mp3" type="audio/mpeg">
     </audio>
+    
+    <!-- 灯箱 -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <img id="lightbox-image" class="lightbox-media">
+            <video id="lightbox-video" class="lightbox-media" controls></video>
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+        </div>
+        <button class="close-lightbox" id="close-lightbox"><i class="fas fa-times"></i></button>
+        <div class="lightbox-nav">
+            <button class="lightbox-prev" id="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="lightbox-next" id="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
 
     <footer class="footer">
+        <div class="heart-container">
+            <div class="heart"></div>
+        </div>
         <p>Made with 💖 for you | 2024</p>
     </footer>
 

@@ -937,4 +937,314 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keydown', autoPlayOnInteraction);
         document.addEventListener('scroll', autoPlayOnInteraction);
     }
-}); 
+});
+
+// 当页面加载完成后直接加载所有内容，避免等待信封点击
+window.addEventListener('load', function() {
+    preloadAllContent();
+});
+
+// 预加载内容，提高响应速度
+function preloadAllContent() {
+    // 预加载信件
+    fetchLetters();
+    
+    // 预加载照片
+    fetchPhotos();
+    
+    // 预加载时间线
+    buildTimeline();
+    
+    // 尝试预加载音乐
+    if (backgroundMusic) {
+        console.log('预加载背景音乐...');
+        backgroundMusic.load();
+    }
+}
+
+// 尝试播放背景音乐
+if (backgroundMusic) {
+    console.log('尝试播放背景音乐...');
+    playSafely(backgroundMusic).then(() => {
+        console.log('背景音乐播放成功!');
+        if (musicToggle) {
+            musicToggle.classList.add('playing');
+            musicToggle.nextElementSibling.textContent = '暂停音乐';
+        }
+    }).catch(e => {
+        console.error('背景音乐播放失败:', e);
+    });
+}
+
+// 安全播放函数
+async function playSafely(audioElement) {
+    try {
+        // 尝试直接播放
+        await audioElement.play();
+    } catch (err) {
+        console.warn('直接播放失败，等待用户交互后再尝试:', err);
+        
+        // 创建一个一次性点击事件监听器，在用户交互后尝试播放
+        const playOnUserInteraction = async () => {
+            try {
+                await audioElement.play();
+                document.removeEventListener('click', playOnUserInteraction);
+                document.removeEventListener('touchstart', playOnUserInteraction);
+            } catch (err2) {
+                console.error('用户交互后播放仍然失败:', err2);
+            }
+        };
+        
+        document.addEventListener('click', playOnUserInteraction);
+        document.addEventListener('touchstart', playOnUserInteraction);
+        
+        // 如果1分钟内未播放，则移除事件监听器
+        setTimeout(() => {
+            document.removeEventListener('click', playOnUserInteraction);
+            document.removeEventListener('touchstart', playOnUserInteraction);
+        }, 60000);
+        
+        // 向上抛出错误，通知调用者播放失败
+        throw err;
+    }
+}
+
+// 音乐控制更新
+if (musicToggle && backgroundMusic) {
+    musicToggle.addEventListener('click', function() {
+        console.log('音乐控制按钮被点击');
+        if (backgroundMusic.paused) {
+            playSafely(backgroundMusic).then(() => {
+                console.log('背景音乐播放成功!');
+                musicToggle.classList.add('playing');
+                musicToggle.nextElementSibling.textContent = '暂停音乐';
+            }).catch(e => console.error('背景音乐播放失败:', e));
+        } else {
+            backgroundMusic.pause();
+            console.log('背景音乐已暂停');
+            musicToggle.classList.remove('playing');
+            musicToggle.nextElementSibling.textContent = '播放音乐';
+        }
+    });
+}
+
+// 照片过滤器
+const filterBtns = document.querySelectorAll('.filter-btn');
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        const filter = this.getAttribute('data-filter');
+        console.log('过滤按钮被点击:', filter);
+        
+        // 移除所有活动状态
+        filterBtns.forEach(b => b.classList.remove('active'));
+        
+        // 添加活动状态
+        this.classList.add('active');
+        
+        // 筛选图片
+        filterGallery(filter);
+    });
+});
+
+// 筛选图库
+function filterGallery(filter) {
+    const items = document.querySelectorAll('.gallery-item');
+    
+    items.forEach(item => {
+        if (filter === 'all') {
+            item.style.display = 'block';
+        } else if (item.getAttribute('data-type') === filter) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// 设置灯箱功能
+function setupLightbox() {
+    if (!lightbox) return;
+    
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    let currentIndex = 0;
+    
+    galleryItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.getAttribute('data-index'));
+            openLightbox(index);
+        });
+    });
+    
+    // 打开灯箱
+    function openLightbox(index) {
+        currentIndex = index;
+        const photos = Array.from(document.querySelectorAll('.gallery-item')).map(item => {
+            return {
+                src: item.querySelector('img, video').getAttribute('src'),
+                type: item.getAttribute('data-type'),
+                caption: item.querySelector('img, video').getAttribute('alt') || '照片'
+            };
+        });
+        
+        const photo = photos[index];
+        
+        // 重置灯箱
+        lightboxImage.style.display = 'none';
+        lightboxVideo.style.display = 'none';
+        
+        // 根据类型显示内容
+        if (photo.type === 'photo') {
+            lightboxImage.src = photo.src;
+            lightboxImage.style.display = 'block';
+        } else if (photo.type === 'video') {
+            lightboxVideo.src = photo.src;
+            lightboxVideo.style.display = 'block';
+        }
+        
+        // 显示说明
+        lightboxCaption.textContent = photo.caption;
+        
+        // 显示灯箱
+        lightbox.classList.add('active');
+        
+        // 禁止滚动
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // 关闭灯箱
+    if (closeLightbox) {
+        closeLightbox.addEventListener('click', () => {
+            lightbox.classList.remove('active');
+            setTimeout(() => {
+                lightboxVideo.pause();
+                document.body.style.overflow = '';
+            }, 300);
+        });
+    }
+    
+    // 上一张/下一张
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', () => {
+            const itemsVisible = Array.from(document.querySelectorAll('.gallery-item')).filter(item => 
+                window.getComputedStyle(item).display !== 'none'
+            );
+            const totalItems = itemsVisible.length;
+            currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+            const newIndex = parseInt(itemsVisible[currentIndex].getAttribute('data-index'));
+            openLightbox(newIndex);
+        });
+    }
+    
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', () => {
+            const itemsVisible = Array.from(document.querySelectorAll('.gallery-item')).filter(item => 
+                window.getComputedStyle(item).display !== 'none'
+            );
+            const totalItems = itemsVisible.length;
+            currentIndex = (currentIndex + 1) % totalItems;
+            const newIndex = parseInt(itemsVisible[currentIndex].getAttribute('data-index'));
+            openLightbox(newIndex);
+        });
+    }
+    
+    // 键盘导航
+    document.addEventListener('keydown', event => {
+        if (!lightbox.classList.contains('active')) return;
+        
+        if (event.key === 'Escape') {
+            closeLightbox.click();
+        } else if (event.key === 'ArrowLeft') {
+            lightboxPrev.click();
+        } else if (event.key === 'ArrowRight') {
+            lightboxNext.click();
+        }
+    });
+}
+
+// 构建时间线
+function buildTimeline() {
+    const timelineContainer = document.querySelector('.timeline-container');
+    if (!timelineContainer) return;
+    
+    // 清除加载指示器
+    const loadingIndicator = timelineContainer.querySelector('.loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+    
+    // 创建时间线项目
+    const timeline = [
+        {
+            date: '第1天',
+            title: '初次相遇',
+            content: '这是我们故事的开始，第一次见面的那一天，一切都是那么美好。'
+        },
+        {
+            date: '第7天',
+            title: '第一次约会',
+            content: '我们的第一次正式约会，一起看电影，一起吃饭，聊了很多很多。'
+        },
+        {
+            date: '第15天',
+            title: '确定关系',
+            content: '在这一天，我们决定正式在一起，成为彼此生命中重要的人。'
+        },
+        {
+            date: '第30天',
+            title: '一月纪念',
+            content: '在一起一个月了，时间过得真快，每一天都很珍贵。'
+        },
+        {
+            date: '第50天',
+            title: '小旅行',
+            content: '我们一起出去旅行，看了美丽的风景，留下了美好的回忆。'
+        },
+        {
+            date: '第75天',
+            title: '度过挑战',
+            content: '我们一起面对了一些挑战，但我们的感情变得更加坚强。'
+        },
+        {
+            date: '第100天',
+            title: '百日纪念',
+            content: '今天是我们在一起的第100天，这个特别的日子值得我们铭记。'
+        }
+    ];
+    
+    // 渲染时间线
+    timeline.forEach(item => {
+        const timelineItem = document.createElement('div');
+        timelineItem.className = 'timeline-item';
+        
+        timelineItem.innerHTML = `
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-date">${item.date}</div>
+                <h3 class="timeline-title">${item.title}</h3>
+                <p>${item.content}</p>
+            </div>
+        `;
+        
+        timelineContainer.appendChild(timelineItem);
+    });
+}
+
+// 显示错误信息
+function showError(message) {
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'error-message';
+    errorMessage.textContent = message;
+    
+    document.body.appendChild(errorMessage);
+    
+    setTimeout(() => {
+        errorMessage.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        errorMessage.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(errorMessage);
+        }, 300);
+    }, 5000);
+} 
