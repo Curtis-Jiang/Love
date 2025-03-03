@@ -344,31 +344,32 @@ a:hover {
     margin-right: 5px;
 }
 
+/* 音乐控制按钮 */
 .music-control {
+    position: fixed;
+    top: 20px;
+    left: 20px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-fast);
-    animation: float 3s ease-in-out infinite;
+    z-index: 1000;
+    font-size: 18px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
 .music-control:hover {
     transform: scale(1.1);
-    box-shadow: var(--shadow-md);
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
-.music-control i {
-    color: var(--primary-color);
-    font-size: 1.2rem;
-}
-
-.music-control i.playing {
+.music-control.playing {
     animation: pulse 2s infinite;
 }
 
@@ -609,49 +610,51 @@ a:hover {
 /* 照片墙 */
 .gallery-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-gap: 15px;
+    padding: 20px;
 }
 
 .gallery-item {
     position: relative;
+    aspect-ratio: 1 / 1;
     overflow: hidden;
-    border-radius: var(--border-radius-sm);
-    box-shadow: var(--shadow-sm);
+    border-radius: 8px;
     cursor: pointer;
-    transition: var(--transition-medium);
-    aspect-ratio: 1;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .gallery-item:hover {
-    transform: scale(1.03);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-.gallery-item img, .gallery-item video {
+.gallery-item img, 
+.gallery-item video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--transition-medium);
+    transition: transform 0.5s;
 }
 
-.gallery-item:hover img, .gallery-item:hover video {
-    transform: scale(1.1);
+.gallery-item:hover img,
+.gallery-item:hover video {
+    transform: scale(1.05);
 }
 
 .video-indicator {
     position: absolute;
-    top: 10px;
+    bottom: 10px;
     right: 10px;
     width: 30px;
     height: 30px;
     background-color: rgba(0, 0, 0, 0.5);
+    color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
 }
 
 /* 全屏照片查看器 */
@@ -662,88 +665,74 @@ a:hover {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
+    z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: var(--transition-medium);
-}
-
-.fullscreen-photo-container.active {
     opacity: 1;
-    visibility: visible;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
-.photo-wrapper {
+.fullscreen-media-container {
     position: relative;
-    width: 100%;
-    height: 80%;
+    width: 90%;
+    height: 75%;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
-.fullscreen-photo, .fullscreen-video {
+.fullscreen-media-container img,
+.fullscreen-media-container video {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border-radius: var(--border-radius-sm);
-    box-shadow: var(--shadow-lg);
-    transition: opacity 0.5s ease;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.5s ease-out;
 }
 
-.fullscreen-video {
-    display: none;
-}
-
-.photo-caption {
-    position: absolute;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-size: 1rem;
-    max-width: 80%;
-    text-align: center;
-}
-
-.photo-instruction {
-    position: absolute;
-    bottom: 30px;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
-    animation: pulse 2s infinite;
-}
-
-.close-fullscreen {
+.close-fullscreen-photo {
     position: absolute;
     top: 20px;
     right: 20px;
     width: 40px;
     height: 40px;
-    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: white;
-    font-size: 1.5rem;
-    transition: var(--transition-fast);
+    transition: background-color 0.3s;
+    z-index: 10000;
 }
 
-.close-fullscreen:hover {
+.close-fullscreen-photo:hover {
     background-color: rgba(255, 255, 255, 0.4);
-    transform: rotate(90deg);
+}
+
+.fullscreen-photo-caption {
+    color: white;
+    font-size: 18px;
+    margin-top: 20px;
+    padding: 10px 20px;
+    text-align: center;
+    max-width: 80%;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+}
+
+.fullscreen-nav-hint {
+    position: absolute;
+    bottom: 20px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    text-align: center;
 }
 
 /* 浮动心形 */
@@ -863,6 +852,7 @@ a:hover {
     
     .gallery-container {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-gap: 10px;
     }
     
     .full-letter-content {
@@ -876,6 +866,31 @@ a:hover {
     
     .full-letter-body {
         font-size: 1rem;
+    }
+    
+    .fullscreen-media-container {
+        width: 95%;
+        height: 60%;
+    }
+    
+    .close-fullscreen-photo {
+        top: 10px;
+        right: 10px;
+        width: 35px;
+        height: 35px;
+    }
+    
+    .fullscreen-photo-caption {
+        font-size: 16px;
+        max-width: 90%;
+    }
+    
+    .music-control {
+        top: 10px;
+        left: 10px;
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
     }
 }
 
@@ -958,6 +973,17 @@ a:hover {
     100% {
         transform: translateY(-100px) scale(1);
         opacity: 0;
+    }
+}
+
+@keyframes zoomIn {
+    from { 
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to { 
+        transform: scale(1);
+        opacity: 1;
     }
 }
 
