@@ -80,7 +80,6 @@
             <ul class="nav-links">
                 <li data-section="letters-section" class="active"><i class="fas fa-envelope"></i><span>信件</span></li>
                 <li data-section="photo-section"><i class="fas fa-image"></i><span>照片墙</span></li>
-                <li data-section="timeline-section"><i class="fas fa-clock-rotate-left"></i><span>时间线</span></li>
             </ul>
             <div class="music-control">
                 <i class="fas fa-music" id="music-toggle"></i>
@@ -89,28 +88,37 @@
         </nav>
 
         <!-- 信件区域 -->
-        <section id="letters-section" class="content-section active">
+        <section id="letters-section" class="content-section active letters-section">
             <div class="section-header">
                 <h2>💌 我们的信件</h2>
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="my-letters">我写给你的</button>
-                    <button class="tab-btn" data-tab="your-letters">你写给我的</button>
-                </div>
             </div>
             
             <div class="letters-container">
-                <div class="tab-content active" id="my-letters">
-                    <!-- 我写给女友的信件将在这里动态加载 -->
-                    <div class="loading-indicator">
-                        <div class="dot-pulse"></div>
-                        <span>加载信件中...</span>
+                <!-- 我写给你的信件 -->
+                <div class="letter-category my-letters-category">
+                    <div class="letters-category-header">
+                        <h2>我写给你的信件</h2>
+                    </div>
+                    <div class="letter-cards" id="my-letters">
+                        <!-- 我写给女友的信件将在这里动态加载 -->
+                        <div class="loading-indicator">
+                            <div class="dot-pulse"></div>
+                            <span>加载信件中...</span>
+                        </div>
                     </div>
                 </div>
-                <div class="tab-content" id="your-letters">
-                    <!-- 女友写给我的信件将在这里动态加载 -->
-                    <div class="loading-indicator">
-                        <div class="dot-pulse"></div>
-                        <span>加载信件中...</span>
+                
+                <!-- 你写给我的信件 -->
+                <div class="letter-category your-letters-category">
+                    <div class="letters-category-header">
+                        <h2>你写给我的信件</h2>
+                    </div>
+                    <div class="letter-cards" id="your-letters">
+                        <!-- 女友写给我的信件将在这里动态加载 -->
+                        <div class="loading-indicator">
+                            <div class="dot-pulse"></div>
+                            <span>加载信件中...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -134,20 +142,6 @@
                 </div>
             </div>
         </section>
-        
-        <!-- 时间线区域 -->
-        <section id="timeline-section" class="content-section">
-            <div class="section-header">
-                <h2>⏳ 我们的故事</h2>
-            </div>
-            <div class="timeline-container">
-                <!-- 时间线内容将在这里动态加载 -->
-                <div class="loading-indicator">
-                    <div class="dot-pulse"></div>
-                    <span>构建时间线中...</span>
-                </div>
-            </div>
-        </section>
     </div>
 
     <!-- 底部导航（移动端） -->
@@ -159,10 +153,6 @@
         <div class="nav-item" data-section="photo-section">
             <i class="fas fa-image"></i>
             <span>照片</span>
-        </div>
-        <div class="nav-item" data-section="timeline-section">
-            <i class="fas fa-clock-rotate-left"></i>
-            <span>时间线</span>
         </div>
     </div>
 

@@ -253,251 +253,158 @@ document.addEventListener('DOMContentLoaded', function() {
     // 从MD文件加载信件
     async function loadLetters() {
         try {
-            // 尝试直接使用硬编码的文件列表，避免fetch请求
-            console.log('使用硬编码的文件列表');
-            const files = [
-                "致璟涵小姐.md",
-                "TO_安定剂.md",
-                "TO_21首.md",
-                "TO_猫狗.md",
-                "TO_onlyone.md",
-                "考试规划两则.md",
-                "考试规划一则.md",
-                "新鲜感.md",
-                "梦.md",
-                "念你千千万万.md",
-                "小狗与姐姐.md",
-                "西安随笔.md",
-                "我爱你.md",
-                "表白.md",
-                "新年快乐.md",
-                "葡萄成熟时.md",
-                "矛盾一则.md",
-                "两人走进的过程.md",
-                "情人节随笔2️⃣.md",
-                "情人节随笔一则.md",
-                "情人节特辑.md",
-                "香港随笔1.md",
-                "小猫🐱小狗🐶.md",
-                "璟涵的第一次未来规划.md",
-                "见面前的最后一封.md",
-                "第一次约会计划.md",
-                "恋爱第一课.md"
-            ];
+            // 直接从doc目录加载信件
+            const response = await fetch('doc-list.json');
+            if (!response.ok) {
+                throw new Error('无法加载信件列表');
+            }
             
-            console.log(`找到 ${files.length} 个文件`);
+            const letterFiles = await response.json();
+            console.log('获取到信件列表:', letterFiles);
             
-            // 初始化计数器
-            let successCount = 0;
-            let errorCount = 0;
+            // 清除加载指示器
+            const loadingIndicators = document.querySelectorAll('.loading-indicator');
+            loadingIndicators.forEach(indicator => {
+                if (indicator.parentNode.id === 'my-letters' || indicator.parentNode.id === 'your-letters') {
+                    indicator.style.display = 'none';
+                }
+            });
             
-            // 处理每个信件文件
-            for (const file of files) {
+            // 分类信件
+            const myLetters = [];
+            const yourLetters = [];
+            
+            // 加载信件
+            for (const file of letterFiles) {
                 try {
-                    // 跳过非MD文件和图片文件
-                    if (!file.endsWith('.md')) continue;
-                    
-                    console.log(`处理文件: ${file}`);
-                    const isYourLetter = file.startsWith('TO_');
-                    
-                    try {
-                        // 尝试获取文件内容
-                        const fileResponse = await fetch(`doc/${file}`);
-                        
-                        if (!fileResponse.ok) {
-                            console.warn(`无法获取文件 ${file}, 状态码: ${fileResponse.status}`);
-                            errorCount++;
-                            continue;
-                        }
-                        
-                        let content = await fileResponse.text();
-                        
-                        // 解析日期 - 通常在第一行
-                        let date = '';
-                        const firstLine = content.split('\n')[0].trim();
-                        if (/^\d+\.\d+(\.\d+)?$/.test(firstLine)) {
-                            date = parseDate(firstLine);
-                            // 移除第一行
-                            content = content.substring(content.indexOf('\n') + 1).trim();
-                        }
-                        
-                        // 创建信件卡片
-                        const letterCard = createLetterCard(file, date, content);
-                        
-                        // 添加到相应容器
-                        if (isYourLetter) {
-                            yourLettersContainer.appendChild(letterCard);
-                        } else {
-                            myLettersContainer.appendChild(letterCard);
-                        }
-                        
-                        successCount++;
-                    } catch (fileError) {
-                        console.error(`处理文件 ${file} 时出错:`, fileError);
-                        errorCount++;
+                    const response = await fetch(`doc/${file}`);
+                    if (!response.ok) {
+                        console.error(`无法加载信件: ${file}`);
+                        continue;
                     }
-                } catch (itemError) {
-                    console.error('处理单个信件时出错:', itemError);
-                    errorCount++;
+                    
+                    const content = await response.text();
+                    const letterTitle = getLetterTitle(file);
+                    
+                    // 判断信件类型
+                    if (file.startsWith('TO_')) {
+                        yourLetters.push({ filename: file, title: letterTitle, content });
+                    } else {
+                        myLetters.push({ filename: file, title: letterTitle, content });
+                    }
+                } catch (error) {
+                    console.error(`加载信件失败: ${file}`, error);
                 }
             }
             
-            console.log(`成功加载 ${successCount} 个信件，失败 ${errorCount} 个`);
-            
-            // 如果没有成功加载任何信件，抛出错误
-            if (successCount === 0) {
-                throw new Error('没有成功加载任何信件');
-            }
-            
-            // 按日期排序信件
-            sortLettersByDate(myLettersContainer);
-            sortLettersByDate(yourLettersContainer);
+            // 渲染信件
+            renderLetters(myLetters, 'my-letters');
+            renderLetters(yourLetters, 'your-letters');
             
         } catch (error) {
-            console.error('加载信件失败:', error);
-            // 使用示例信件
-            useExampleLetters();
+            console.error('加载信件列表失败:', error);
+            showError('无法加载信件列表，请刷新页面重试。');
         }
     }
     
-    // 解析日期字符串
-    function parseDate(dateStr) {
-        // 尝试解析各种日期格式
-        if (/^\d+\.\d+$/.test(dateStr)) {
-            // 格式: 1.4
-            const [month, day] = dateStr.split('.').map(Number);
-            return `${new Date().getFullYear()}年${month}月${day}日`;
-        } else if (/^\d+\.\d+\.\d+$/.test(dateStr)) {
-            // 格式: 2023.1.4
-            const [year, month, day] = dateStr.split('.').map(Number);
-            return `${year}年${month}月${day}日`;
-        }
+    // 渲染信件列表
+    function renderLetters(letters, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
         
-        // 如果无法解析，返回原字符串
-        return dateStr;
+        letters.forEach(letter => {
+            const letterCard = createLetterCard(letter.title, extractDate(letter.content), getLetterPreview(letter.content), letter.content);
+            container.appendChild(letterCard);
+        });
+    }
+    
+    // 从文件名获取信件标题
+    function getLetterTitle(filename) {
+        // 移除 .md 扩展名和 TO_ 前缀
+        let title = filename.replace('.md', '').replace('TO_', '');
+        // 将下划线替换为空格
+        title = title.replace(/_/g, ' ');
+        return title;
+    }
+    
+    // 提取日期
+    function extractDate(content) {
+        // 尝试从内容中提取日期
+        const dateRegex = /\d{4}[/\-年]\d{1,2}[/\-月]\d{1,2}/;
+        const match = content.match(dateRegex);
+        
+        if (match) {
+            return match[0];
+        } else {
+            // 默认返回当前日期
+            const now = new Date();
+            return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+        }
+    }
+    
+    // 获取信件预览
+    function getLetterPreview(content) {
+        // 移除 Markdown 格式并获取前 100 个字符
+        let preview = content.replace(/[#*`>]/g, '').trim();
+        return preview.length > 100 ? preview.substring(0, 100) + '...' : preview;
     }
     
     // 创建信件卡片
-    function createLetterCard(filename, date, content) {
+    function createLetterCard(title, date, preview, content) {
         const card = document.createElement('div');
         card.className = 'letter-card';
-        
-        // 标题通常是第一行或文件名
-        let title = filename.replace('.md', '').replace('TO_', '');
-        const lines = content.split('\n');
-        if (lines.length > 0 && lines[0].trim()) {
-            // 如果第一行不是日期，使用第一行作为标题
-            title = lines[0].trim().replace(/[:#\-]/g, '');
-        }
-        
-        // 简短预览
-        let preview = content;
-        if (preview.length > 300) {
-            preview = preview.substring(0, 300) + '...';
-        }
-        
-        // 替换Markdown格式
-        preview = preview.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                         .replace(/\n\n/g, '<br><br>')
-                         .replace(/\n/g, '<br>');
         
         card.innerHTML = `
             <div class="letter-card-header">
                 <h3>${title}</h3>
-                <div class="letter-date">${date || '未知日期'}</div>
+                <div class="letter-date">${date}</div>
             </div>
             <div class="letter-preview">${preview}</div>
         `;
         
-        // 点击卡片，打开完整信件
+        // 点击打开信件
         card.addEventListener('click', () => {
-            openFullLetter(title, date, content);
-            playSound('https://www.soundjay.com/buttons/sounds/button-28.mp3');
+            openLetter(title, date, content);
         });
         
         return card;
     }
     
-    // 按日期排序信件
-    function sortLettersByDate(container) {
-        const cards = Array.from(container.children);
+    // 打开信件
+    function openLetter(title, date, content) {
+        // 创建全屏信件元素
+        const fullLetter = document.createElement('div');
+        fullLetter.className = 'full-letter';
         
-        cards.sort((a, b) => {
-            const dateA = a.querySelector('.letter-date').textContent;
-            const dateB = b.querySelector('.letter-date').textContent;
-            
-            // 尝试解析日期
-            return parseDateForSort(dateB) - parseDateForSort(dateA);
-        });
+        // 转换 Markdown 内容为 HTML
+        const htmlContent = convertMarkdownToHtml(content);
         
-        // 清空容器并重新添加排序后的卡片
-        container.innerHTML = '';
-        cards.forEach(card => container.appendChild(card));
-    }
-    
-    // 将日期字符串解析为时间戳用于排序
-    function parseDateForSort(dateStr) {
-        if (dateStr === '未知日期') return 0;
-        
-        // 尝试解析 "2023年1月4日" 格式
-        const match = dateStr.match(/(\d+)年(\d+)月(\d+)日/);
-        if (match) {
-            const [_, year, month, day] = match;
-            return new Date(year, month - 1, day).getTime();
-        }
-        
-        return 0;
-    }
-    
-    // 打开完整信件
-    function openFullLetter(title, date, content) {
-        console.log(`打开信件: ${title}`);
-        
-        // 检查是否已存在全屏信件
-        let fullLetter = document.querySelector('.full-letter');
-        if (!fullLetter) {
-            // 创建全屏信件元素
-            fullLetter = document.createElement('div');
-            fullLetter.className = 'full-letter';
-            document.body.appendChild(fullLetter);
-        }
-        
-        // 替换Markdown格式
-        content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                         .replace(/\n\n/g, '<br><br>')
-                         .replace(/\n/g, '<br>');
-        
-        // 填充内容
         fullLetter.innerHTML = `
-            <div class="close-letter">
-                <i class="fas fa-times"></i>
-            </div>
             <div class="full-letter-content">
                 <div class="full-letter-header">
                     <h2>${title}</h2>
-                    <div class="full-letter-date">${date || '未知日期'}</div>
+                    <div class="full-letter-date">${date}</div>
                 </div>
-                <div class="full-letter-body">
-                    ${content}
-                </div>
+                <div class="full-letter-body">${htmlContent}</div>
+                <button class="close-letter"><i class="fas fa-times"></i></button>
             </div>
         `;
         
-        // 打开信件
-        setTimeout(() => fullLetter.classList.add('open'), 10);
+        // 添加到文档中
+        document.body.appendChild(fullLetter);
+        
+        // 动画显示
+        setTimeout(() => {
+            fullLetter.classList.add('open');
+        }, 10);
         
         // 关闭按钮
-        fullLetter.querySelector('.close-letter').addEventListener('click', () => {
+        const closeBtn = fullLetter.querySelector('.close-letter');
+        closeBtn.addEventListener('click', () => {
             fullLetter.classList.remove('open');
-        });
-        
-        // 点击背景关闭
-        fullLetter.addEventListener('click', e => {
-            if (e.target === fullLetter) {
-                fullLetter.classList.remove('open');
-            }
+            setTimeout(() => {
+                document.body.removeChild(fullLetter);
+            }, 300);
         });
     }
     
@@ -743,43 +650,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 加载时间轴
-    function loadTimeline() {
-        console.log('加载时间轴');
-        const timeline = document.querySelector('.timeline');
-        
-        // 模拟时间轴数据
-        const events = [
-            { date: '第1天', title: '相遇', content: '我们的故事从这一天开始...' },
-            { date: '第20天', title: '第一次约会', content: '我们一起度过了美好的时光...' },
-            { date: '第50天', title: '难忘的旅行', content: '一起去了向往已久的地方...' },
-            { date: '第75天', title: '特别的日子', content: '在这一天，我们...' },
-            { date: '第100天', title: '百日纪念', content: '感谢有你，这一百天...' }
-        ];
-        
-        // 创建时间轴项目
-        events.forEach((event, index) => {
-            try {
-                const item = document.createElement('div');
-                item.className = 'timeline-item';
-                
-                item.innerHTML = `
-                    <div class="dot"></div>
-                    <div class="timeline-date">${event.date}</div>
-                    <div class="timeline-content">
-                        <h3>${event.title}</h3>
-                        <p>${event.content}</p>
-                    </div>
-                `;
-                
-                timeline.appendChild(item);
-                console.log(`添加时间轴项 ${index + 1}/${events.length}`);
-            } catch (error) {
-                console.error(`处理时间轴项 ${index} 时出错:`, error);
-            }
-        });
-    }
-    
     // 添加装饰元素
     function addDecorativeElements() {
         console.log('添加装饰元素...');
@@ -826,59 +696,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 4000);
     }
     
-    // 如果无法从服务器加载信件，使用示例数据
-    function useExampleLetters() {
-        console.log('使用示例信件数据');
-        // 我写给女友的信件示例
-        const myLetters = [
-            {
-                title: '新年快乐',
-                date: '2024年1月1日',
-                content: `亲爱的，<br><br>
-                        新的一年到了，回顾过去的时光，最让我感到幸福的就是有你的陪伴。<br><br>
-                        希望在新的一年里，我们能够一起创造更多美好的回忆。<br><br>
-                        爱你的我`
-            },
-            {
-                title: '情人节快乐',
-                date: '2024年2月14日',
-                content: `亲爱的，<br><br>
-                        情人节快乐！感谢你一直以来的陪伴和理解，你是我生命中最美好的礼物。<br><br>
-                        这是我们在一起后的第一个情人节，希望未来还有无数个这样的日子。<br><br>
-                        永远爱你的我`
-            }
-        ];
-        
-        // 女友写给我的信件示例
-        const yourLetters = [
-            {
-                title: 'TO_我的爱',
-                date: '2024年1月20日',
-                content: `亲爱的，<br><br>
-                        谢谢你一直以来的关心和照顾，你的温柔和体贴让我感到无比幸福。<br><br>
-                        希望我们的爱情能够如同冬日的阳光，温暖而持久。<br><br>
-                        爱你的我`
-            }
-        ];
-        
-        // 添加示例信件
-        myLetters.forEach(letter => {
-            const card = createLetterCard(letter.title, letter.date, letter.content);
-            myLettersContainer.appendChild(card);
-        });
-        
-        yourLetters.forEach(letter => {
-            const card = createLetterCard(letter.title, letter.date, letter.content);
-            yourLettersContainer.appendChild(card);
-        });
-    }
-    
     // 使用所有示例内容
     function useExampleContent() {
         console.log('使用所有示例内容');
         useExampleLetters();
         loadGallery();
-        loadTimeline();
     }
 
     // 设置背景音乐
@@ -951,9 +773,6 @@ function preloadAllContent() {
     
     // 预加载照片
     fetchPhotos();
-    
-    // 预加载时间线
-    buildTimeline();
     
     // 尝试预加载音乐
     if (backgroundMusic) {
@@ -1161,74 +980,6 @@ function setupLightbox() {
     });
 }
 
-// 构建时间线
-function buildTimeline() {
-    const timelineContainer = document.querySelector('.timeline-container');
-    if (!timelineContainer) return;
-    
-    // 清除加载指示器
-    const loadingIndicator = timelineContainer.querySelector('.loading-indicator');
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-    }
-    
-    // 创建时间线项目
-    const timeline = [
-        {
-            date: '第1天',
-            title: '初次相遇',
-            content: '这是我们故事的开始，第一次见面的那一天，一切都是那么美好。'
-        },
-        {
-            date: '第7天',
-            title: '第一次约会',
-            content: '我们的第一次正式约会，一起看电影，一起吃饭，聊了很多很多。'
-        },
-        {
-            date: '第15天',
-            title: '确定关系',
-            content: '在这一天，我们决定正式在一起，成为彼此生命中重要的人。'
-        },
-        {
-            date: '第30天',
-            title: '一月纪念',
-            content: '在一起一个月了，时间过得真快，每一天都很珍贵。'
-        },
-        {
-            date: '第50天',
-            title: '小旅行',
-            content: '我们一起出去旅行，看了美丽的风景，留下了美好的回忆。'
-        },
-        {
-            date: '第75天',
-            title: '度过挑战',
-            content: '我们一起面对了一些挑战，但我们的感情变得更加坚强。'
-        },
-        {
-            date: '第100天',
-            title: '百日纪念',
-            content: '今天是我们在一起的第100天，这个特别的日子值得我们铭记。'
-        }
-    ];
-    
-    // 渲染时间线
-    timeline.forEach(item => {
-        const timelineItem = document.createElement('div');
-        timelineItem.className = 'timeline-item';
-        
-        timelineItem.innerHTML = `
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-                <div class="timeline-date">${item.date}</div>
-                <h3 class="timeline-title">${item.title}</h3>
-                <p>${item.content}</p>
-            </div>
-        `;
-        
-        timelineContainer.appendChild(timelineItem);
-    });
-}
-
 // 显示错误信息
 function showError(message) {
     const errorMessage = document.createElement('div');
@@ -1247,4 +998,42 @@ function showError(message) {
             document.body.removeChild(errorMessage);
         }, 300);
     }, 5000);
+}
+
+// 转换Markdown为HTML
+function convertMarkdownToHtml(markdown) {
+    if (!markdown) return '';
+    
+    // 处理标题 (## 标题)
+    markdown = markdown.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+    markdown = markdown.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+    markdown = markdown.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+    
+    // 处理粗体和斜体
+    markdown = markdown.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    markdown = markdown.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    
+    // 处理链接 [文本](链接)
+    markdown = markdown.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    
+    // 处理引用
+    markdown = markdown.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+    
+    // 处理代码块
+    markdown = markdown.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // 处理段落
+    let paragraphs = markdown.split(/\n\s*\n/);
+    markdown = paragraphs.map(p => {
+        // 跳过已处理的HTML元素
+        if (p.trim().startsWith('<') && !p.trim().startsWith('<a')) {
+            return p;
+        }
+        return `<p>${p.trim()}</p>`;
+    }).join('\n');
+    
+    // 处理行内换行
+    markdown = markdown.replace(/\n/g, '<br>');
+    
+    return markdown;
 } 

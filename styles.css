@@ -38,19 +38,18 @@
 }
 
 body {
-    font-family: 'Noto Serif SC', 'PingFang SC', 'Microsoft YaHei', '微软雅黑', 'Hiragino Sans GB', '冬青黑体', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    line-height: 1.8;
-    letter-spacing: 0.02em;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    font-family: 'Roboto', 'Microsoft YaHei', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    background: url('images/IMG_8411.JPG') no-repeat center center fixed;
+    background-size: cover;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
 }
 
+/* 添加一个透明的覆盖层，确保内容可读 */
 body::before {
     content: "";
     position: fixed;
@@ -58,17 +57,8 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('https://i.imgur.com/JXMpbjC.png');
-    background-size: 200px;
-    opacity: 0.03;
+    background-color: rgba(255, 255, 255, 0.85); /* 白色半透明背景 */
     z-index: -1;
-    animation: subtleFloating 60s infinite linear;
-}
-
-@keyframes subtleFloating {
-    0% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-5px) rotate(0.5deg); }
-    100% { transform: translateY(0) rotate(0deg); }
 }
 
 h1, h2, h3 {
@@ -509,63 +499,126 @@ a:hover {
     animation: fadeIn 0.5s ease;
 }
 
-/* 信件容器 */
-.letters-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    padding: 1rem;
+/* 信件区域样式 */
+.letters-section {
+    margin: 40px auto;
+    max-width: 1200px;
+    padding: 20px;
 }
 
+.letters-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.letter-category {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #ff85a2;
+    margin-bottom: 30px;
+}
+
+.your-letters-category {
+    border-left-color: #ff85a2; /* 女友的信件用粉色边框 */
+}
+
+.my-letters-category {
+    border-left-color: #7eb6ff; /* 我的信件用蓝色边框 */
+}
+
+.letters-category-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.letters-category-header h2 {
+    font-size: 24px;
+    margin: 0;
+    color: #333;
+}
+
+.letter-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* 信件卡片样式 */
 .letter-card {
-    background-color: white;
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-medium);
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
-    transform: translateY(20px);
-    opacity: 0;
-    animation: slideUp 0.6s ease forwards;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #eaeaea;
+}
+
+.letter-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #ff85a2, #ff85a2);
+    opacity: 0.7;
+}
+
+.your-letters-container .letter-card::before {
+    background: linear-gradient(to bottom, #ff85a2, #ff85a2);
+}
+
+.my-letters-container .letter-card::before {
+    background: linear-gradient(to bottom, #7eb6ff, #7eb6ff);
 }
 
 .letter-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .letter-card-header {
-    padding: 1.5rem 1.5rem 0.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
 }
 
 .letter-card-header h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.4rem;
-    color: var(--primary-color);
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
 }
 
 .letter-date {
-    font-size: 0.9rem;
-    color: var(--light-text);
+    font-size: 14px;
+    color: #888;
 }
 
 .letter-preview {
-    padding: 1.5rem;
-    font-size: 1rem;
+    font-size: 14px;
+    color: #666;
     line-height: 1.6;
-    color: var(--text-color);
-    max-height: 150px;
+    max-height: 85px;
     overflow: hidden;
     position: relative;
 }
 
 .letter-preview::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
+    height: 30px;
     height: 50px;
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
 }
@@ -948,6 +1001,15 @@ a:hover {
         height: 40px;
         font-size: 1.2rem;
     }
+    
+    /* 删除时间线媒体查询样式 */
+    .timeline-container::before,
+    .timeline-item,
+    .timeline-item:nth-child(even),
+    .timeline-dot,
+    .timeline-item:nth-child(even) .timeline-dot {
+        display: none;
+    }
 }
 
 /* 进一步优化小型设备 */
@@ -975,6 +1037,11 @@ a:hover {
 
     .mobile-nav {
         padding: 0.5rem;
+    }
+    
+    /* 删除时间线媒体查询样式 */
+    .timeline-content {
+        display: none;
     }
 }
 
@@ -1355,81 +1422,20 @@ a:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* 时间线样式 */
-.timeline-container {
-    margin: 2rem 0;
-    position: relative;
-    padding: 0 1rem;
+/* 自动加载动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.timeline-container::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, transparent, var(--primary-color), var(--accent-color), transparent);
-    transform: translateX(-50%);
-}
-
-.timeline-item {
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 30px;
-    margin-bottom: 2rem;
-    position: relative;
-    width: 50%;
-}
-
-.timeline-item:nth-child(even) {
-    align-self: flex-end;
-    justify-content: flex-start;
-    padding-right: 0;
-    padding-left: 30px;
-    margin-left: 50%;
-}
-
-.timeline-content {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-    max-width: 400px;
-    transition: var(--transition-medium);
-}
-
-.timeline-content:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-}
-
-.timeline-date {
-    color: var(--primary-color);
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.timeline-title {
-    font-family: 'Ma Shan Zheng', cursive;
-    color: var(--accent-color);
-    margin-bottom: 0.5rem;
-}
-
-.timeline-dot {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    top: 15px;
-    right: -8px;
-    box-shadow: 0 0 0 4px rgba(255, 126, 179, 0.2);
-}
-
-.timeline-item:nth-child(even) .timeline-dot {
-    right: auto;
-    left: -8px;
+.loading-complete .main-content {
+    animation: fadeInUp 0.8s ease forwards;
 }
 
 /* 心形动画 */
@@ -1475,73 +1481,6 @@ a:hover {
     70% { transform: rotate(45deg) scale(1); }
 }
 
-/* 媒体查询更新 */
-@media (max-width: 768px) {
-    .timeline-container::before {
-        left: 30px;
-    }
-    
-    .timeline-item {
-        width: 100%;
-        justify-content: flex-start;
-        padding-left: 60px;
-        padding-right: 0;
-    }
-    
-    .timeline-item:nth-child(even) {
-        margin-left: 0;
-        padding-left: 60px;
-    }
-    
-    .timeline-dot {
-        left: 22px;
-        right: auto;
-    }
-    
-    .timeline-item:nth-child(even) .timeline-dot {
-        left: 22px;
-    }
-    
-    .lightbox-nav {
-        padding: 0 10px;
-    }
-    
-    .lightbox-prev, .lightbox-next {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .welcome-subtitle {
-        font-size: 1rem;
-    }
-    
-    .gallery-filter {
-        gap: 0.3rem;
-    }
-    
-    .filter-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-    
-    .timeline-content {
-        padding: 1rem;
-    }
-    
-    .lightbox-caption {
-        padding: 0.7rem;
-        font-size: 0.9rem;
-    }
-    
-    .lightbox-prev, .lightbox-next {
-        width: 32px;
-        height: 32px;
-    }
-}
-
 /* 错误消息样式 */
 .error-message {
     position: fixed;
@@ -1565,20 +1504,4 @@ a:hover {
 .error-message.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
-}
-
-/* 自动加载动画 */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.loading-complete .main-content {
-    animation: fadeInUp 0.8s ease forwards;
 } 
